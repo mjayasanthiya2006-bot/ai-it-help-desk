@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "AI IT Help Desk"
+description = "An AI-powered IT support workspace that diagnoses common technical issues, grounds answers in a searchable knowledge base, and recommends practical troubleshooting steps with safe diagnostic tools."
+version = "1.0.0"
+id = "artifacts/it-help-desk"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24423
+
+[services.development]
+run = "pnpm --filter @workspace/it-help-desk run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/it-help-desk", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/it-help-desk/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24423"
+BASE_PATH = "/"
