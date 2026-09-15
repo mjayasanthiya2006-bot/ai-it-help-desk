@@ -1,0 +1,1 @@
+- [Generated client DOM iterable support](generated-client-dom-iterable.md) — include dom.iterable when generated request helpers use Headers.entries.
