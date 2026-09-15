@@ -1,0 +1,228 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: helpdesk
+    description: IT help desk operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /overview:
+    get:
+      operationId: getHelpdeskOverview
+      tags: [helpdesk]
+      summary: Get help desk overview
+      description: Returns overview metrics for the support workspace
+      responses:
+        "200":
+          description: Help desk overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HelpdeskOverview"
+  /knowledge:
+    get:
+      operationId: searchKnowledge
+      tags: [helpdesk]
+      summary: Search the IT knowledge base
+      description: Returns the most relevant troubleshooting articles for a query
+      parameters:
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Matching knowledge base articles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/KnowledgeArticle"
+  /diagnose:
+    post:
+      operationId: diagnoseIssue
+      tags: [helpdesk]
+      summary: Diagnose an IT issue
+      description: Retrieves relevant knowledge and produces a structured troubleshooting plan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IssueInput"
+      responses:
+        "200":
+          description: Structured diagnosis
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiagnosticReport"
+        "400":
+          description: Invalid issue input
+  /tools/check:
+    post:
+      operationId: runDiagnosticTool
+      tags: [helpdesk]
+      summary: Run a safe diagnostic check
+      description: Runs a non-destructive simulated endpoint or device check
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ToolCheckInput"
+      responses:
+        "200":
+          description: Diagnostic check result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ToolCheckResult"
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    HelpdeskOverview:
+      type: object
+      properties:
+        articles:
+          type: integer
+        issueTypes:
+          type: integer
+        avgResolution:
+          type: string
+        solvedThisWeek:
+          type: integer
+        toolChecks:
+          type: integer
+      required: [articles, issueTypes, avgResolution, solvedThisWeek, toolChecks]
+    KnowledgeArticle:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        category:
+          type: string
+        summary:
+          type: string
+        content:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        relevance:
+          type: number
+      required: [id, title, category, summary, content, tags, relevance]
+    IssueInput:
+      type: object
+      properties:
+        issue:
+          type: string
+          minLength: 3
+        device:
+          type: string
+        urgency:
+          type: string
+      required: [issue]
+    DiagnosticStep:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+        tool:
+          type: ["string", "null"]
+        status:
+          type: string
+      required: [id, title, detail, tool, status]
+    DiagnosticReport:
+      type: object
+      properties:
+        id:
+          type: string
+        issue:
+          type: string
+        diagnosis:
+          type: string
+        confidence:
+          type: number
+        severity:
+          type: string
+        steps:
+          type: array
+          items:
+            $ref: "#/components/schemas/DiagnosticStep"
+        sources:
+          type: array
+          items:
+            $ref: "#/components/schemas/KnowledgeArticle"
+        suggestedReply:
+          type: string
+        createdAt:
+          type: string
+      required: [id, issue, diagnosis, confidence, severity, steps, sources, suggestedReply, createdAt]
+    ToolCheckInput:
+      type: object
+      properties:
+        tool:
+          type: string
+        target:
+          type: string
+      required: [tool, target]
+    ToolCheckResult:
+      type: object
+      properties:
+        tool:
+          type: string
+        target:
+          type: string
+        status:
+          type: string
+        summary:
+          type: string
+        details:
+          type: array
+          items:
+            type: string
+        checkedAt:
+          type: string
+      required: [tool, target, status, summary, details, checkedAt]
+
